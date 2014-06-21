@@ -69,6 +69,8 @@ while (farCandies.length < 200) {
   farCandies.push(new Candy(getRandomNum(0, gameWidth), getRandomNum(0, 470), getRandomNum(.7, 4), allColors, 'far'));
 }
 
+var blasts = []
+
 
 
 
@@ -99,7 +101,20 @@ function loop() {
       farCandies[i].draw();
     }
 
+    clearCtxPlayer();
     player.draw();
+
+    if (player.fired === 12) {
+      blasts.push(new energyBlast(player.drawX+75, player.drawY+15));
+      player.fire = false;
+    }
+
+    for (var i = 0; i < blasts.length; i++) {
+      blasts[i].draw();
+      if (blasts[i].drawX > 1025) {
+        blasts.splice(i, 1);
+      }
+    }
 
     for (var i = 0; i < candies.length; i++) {
       if (candies[i].x < -75) {
@@ -166,6 +181,8 @@ function Player() {
   this.moveDown = false;
   this.moveLeft = false;
   this.moveRight = false;
+  this.fire = false;
+  this.fired = 0;
 }
 
 function clearCtxPlayer() {
@@ -180,12 +197,28 @@ Player.prototype.updateCoors = function() {
 }
 
 Player.prototype.draw = function() {
-  clearCtxPlayer();
-  player.updateCoors();
   player.motion();
-  this.frameX = (this.frameCount % 16) * 110;
-  this.frameCount += 1;
-  ctxPlayer.drawImage(spriteSheet, this.frameX, this.frameY, this.width, this.height, this.drawX, this.drawY, this.width, this.height);
+  player.updateCoors();
+  if (this.fired > 0) {
+    if (this.fired === 1) {
+      this.frameCount = 0;
+      this.frameX = 0;
+    }
+    this.frameY = 770;
+    this.frameX = (this.frameCount % 16) * 128;
+    ctxPlayer.drawImage(spriteSheet, this.frameX, this.frameY, 128, 96, this.drawX, this.drawY, 128, 96);
+    this.frameCount += 1;
+    this.fired += 1;
+    if (this.fired > 16) {
+      this.fired = 0;
+      this.frameCount = 0;
+      this.frameY = 640;
+    }
+  } else {
+    this.frameX = (this.frameCount % 16) * this.width;
+    this.frameCount += 1;
+    ctxPlayer.drawImage(spriteSheet, this.frameX, this.frameY, this.width, this.height, this.drawX, this.drawY, this.width, this.height);
+  }
 };
 
 Player.prototype.motion = function() {
@@ -216,9 +249,9 @@ function Candy(x, y, radius, allColors, distance) {
   // this.destroyed = false;
   this.colors = allColors[Math.floor(getRandomNum(0,6))];
   if (distance === 'near') {
-    this.xVel = (1/radius) * 100;
+    this.speed = (1/radius) * 100;
   } else {
-    this.xVel = radius;
+    this.speed = radius;
   }
   // this.containsPoint = function(x, y) {
   //   if (x >= (this.x - this.radius) && x <= (this.x + this.radius)) {
@@ -234,7 +267,7 @@ function Candy(x, y, radius, allColors, distance) {
 }
 
 Candy.prototype.draw = function() {
-  this.x -= this.xVel;
+  this.x -= this.speed;
   drawCircle(this.x, this.y, this.radius, this.colors);
 }
 
@@ -253,6 +286,30 @@ function drawCircle(x, y, radius, colors) {
   ctxCandy.beginPath();
   ctxCandy.arc(x, y, radius, 0, Math.PI * 2, false);
   ctxCandy.fill();
+}
+
+
+
+
+
+// Energy Blast Functions
+function energyBlast(x, y) {
+  this.drawX = x;
+  this.drawY = y;
+  this.width = 90;
+  this.height = 50;
+  this.speed = 10;
+  this.frameX = 0;
+  this.frameY = 720;
+  this.frameCount = 0;
+
+}
+
+energyBlast.prototype.draw = function() {
+  this.drawX += this.speed;
+  this.frameX = (this.frameCount % 4) * this.width;
+  this.frameCount += 1;
+  ctxPlayer.drawImage(spriteSheet, this.frameX, this.frameY, this.width, this.height, this.drawX, this.drawY, this.width, this.height);
 }
 
 
@@ -282,8 +339,11 @@ function keyDown(event) {
     break;
 
   case SPACE_KEY:
+  if (player.fired === 0) {
     player.fire = true;
+    player.fired = 1;
     break;
+  }
 
   default:
     handled = false;
@@ -316,10 +376,9 @@ function keyUp(event) {
     player.moveRight = false;
     break;
 
-  case SPACE_KEY:
-    player.fire = false;
-    player.fired = false;
-    break;
+  // case SPACE_KEY:
+  //   player.fire = false;
+  //   break;
 
   default:
     handled = false;
