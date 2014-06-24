@@ -73,6 +73,7 @@ while (farCandies.length < 200) {
 }
 
 var blasts = []
+var explosions = []
 
 
 
@@ -132,7 +133,7 @@ function loopChecks() {
   }
 
   if (player.fired === 12) {
-      blasts.push(new energyBlast(player.drawX+75, player.drawY+15));
+      blasts.push(new EnergyBlast(player.drawX+75, player.drawY+15));
     }
 
   for (var i = 0; i < blasts.length; i++) {
@@ -158,12 +159,20 @@ function loopChecks() {
       if (intersects(candies[i], blasts[j])) {
         candies[i].hits -= 1;
         if (candies[i].hits === 0) {
+          explosions.push(new Explosion(candies[i].x, candies[i].y, candies[i].radius));
           candies.splice(i, 1);
           points += 1;
         }
         blasts.splice(j, 1);
         break;
       }
+    }
+  }
+
+  for (var i = 0; i < explosions.length; i++) {
+    explosions[i].draw();
+    if (explosions[i].frameCount === 25) {
+      explosions.splice(i, 1);
     }
   }
 
@@ -344,7 +353,7 @@ function drawCircle(x, y, radius, colors) {
 
 
 // Energy Blast Functions
-function energyBlast(x, y) {
+function EnergyBlast(x, y) {
   this.drawX = x;
   this.drawY = y;
   this.width = 90;
@@ -355,11 +364,11 @@ function energyBlast(x, y) {
   this.frameCount = 0;
 }
 
-energyBlast.prototype.front = function() {
+EnergyBlast.prototype.front = function() {
   return this.drawX + this.width;
 }
 
-energyBlast.prototype.draw = function() {
+EnergyBlast.prototype.draw = function() {
   this.drawX += this.speed;
   this.frameX = (this.frameCount % 4) * this.width;
   this.frameCount += 1;
@@ -367,6 +376,27 @@ energyBlast.prototype.draw = function() {
 }
 
 
+
+
+
+// Explosion Functions
+function Explosion(x, y, radius) {
+  this.drawX = x - radius - 25;
+  this.drawY = y - radius;
+  this.width = 60;
+  this.height = 51;
+  this.drawWidth = radius * 2.2;
+  this.drawHeight = radius * 2.2;
+  this.frameX = 0;
+  this.frameY = 866;
+  this.frameCount = 0;
+}
+
+Explosion.prototype.draw = function () {
+  this.frameX = (this.frameCount % 25) * this.width;
+  this.frameCount += 1;
+  ctxPlayer.drawImage(spriteSheet, this.frameX, this.frameY, this.width, this.height, this.drawX, this.drawY, this.drawWidth, this.drawHeight);
+}
 
 
 // Event Functions
