@@ -8,10 +8,11 @@ var ctxPlayer = canvasPlayer.getContext('2d');
 
 var canvasCandy = document.getElementById('canvasCandy');
 var ctxCandy = canvasCandy.getContext('2d');
+var gameOver = false;
+var loopTimer = 0;
 
 var gameWidth = canvasBg.width;
 var gameHeight = canvasBg.height;
-var isPlaying = false;
 var requestAnimFrame = window.requestAnimationFrame ||
                        window.webkitRequestAnimationFrame ||
                        window.mozRequestAnimationFrame ||
@@ -62,6 +63,8 @@ var player;
 var candies = [];
 var farCandies = [];
 
+var points = 0;
+
 while (candies.length < 15) {
   candies.push(new Candy(getRandomNum(gameWidth, gameWidth + 400), getRandomNum(0, gameHeight), getRandomNum(15, 75), allColors, 'near'));
 }
@@ -87,42 +90,19 @@ function init() {
 }
 
 function loop() {
-  if (isPlaying) {
+  if (!gameOver) {
+    loopTimer += 1;
 
     moveBg(bgSky, 1);
     moveBg(bgGround, 8);
     clearCtxCandy();
 
-    for (var i = 0; i < farCandies.length; i++) {
-      if (farCandies[i].x < -10) {
-        farCandies.splice(i, 1);
-        farCandies.push(new Candy(getRandomNum(gameWidth+10, gameWidth+20), getRandomNum(0, 470), getRandomNum(.7, 4), allColors, 'far'));
-      }
-      farCandies[i].draw();
-    }
-
     clearCtxPlayer();
     player.draw();
 
-    if (player.fired === 12) {
-      blasts.push(new energyBlast(player.drawX+75, player.drawY+15));
-      player.fire = false;
-    }
+    loopChecks();
 
-    for (var i = 0; i < blasts.length; i++) {
-      blasts[i].draw();
-      if (blasts[i].drawX > 1025) {
-        blasts.splice(i, 1);
-      }
-    }
-
-    for (var i = 0; i < candies.length; i++) {
-      if (candies[i].x < -75) {
-        candies.splice(i, 1);
-        candies.push(new Candy(getRandomNum(gameWidth+250, gameWidth + 500), getRandomNum(0, gameHeight), getRandomNum(15, 75), allColors, 'near'));
-      }
-      candies[i].draw();
-    }
+    drawTextCentered(ctxPlayer, 'Score: ' + points, 50, 35, 25, 'Arial');
 
     requestAnimFrame(loop);
 
@@ -130,12 +110,63 @@ function loop() {
 }
 
 function startLoop() {
-  isPlaying = true;
   loop();
 }
 
 function stopLoop() {
-  isPlaying = false;
+  gameOver = true;
+}
+
+function loopChecks() {
+  for (var i = 0; i < farCandies.length; i++) {
+      if (farCandies[i].x < -10) {
+        farCandies.splice(i, 1);
+        farCandies.push(new Candy(getRandomNum(gameWidth+10, gameWidth+20), getRandomNum(0, 470), getRandomNum(.7, 4), allColors, 'far'));
+      }
+      farCandies[i].draw();
+    }
+
+  if (loopTimer > 300) {
+    candies.push(new Candy(getRandomNum(gameWidth+250, gameWidth + 500), getRandomNum(0, gameHeight), getRandomNum(15, 75), allColors, 'near'));
+    loopTimer = 0;
+  }
+
+  if (player.fired === 12) {
+      blasts.push(new energyBlast(player.drawX+75, player.drawY+15));
+    }
+
+  for (var i = 0; i < blasts.length; i++) {
+    blasts[i].draw();
+    if (blasts[i].drawX > 1025) {
+      blasts.splice(i, 1);
+    }
+  }
+
+  for (var i = 0; i < candies.length; i++) {
+    if (candies[i].x < -75) {
+      candies.splice(i, 1);
+      candies.push(new Candy(getRandomNum(gameWidth+250, gameWidth + 500), getRandomNum(0, gameHeight), getRandomNum(15, 75), allColors, 'near'));
+    }
+    if (intersects(candies[i], player)) {
+      player.hits -= 1;
+      points -= 2;
+      candies.splice(i, 1);
+      break;
+    }
+    candies[i].draw();
+    for (var j = 0; j < blasts.length; j++) {
+      if (intersects(candies[i], blasts[j])) {
+        candies[i].hits -= 1;
+        if (candies[i].hits === 0) {
+          candies.splice(i, 1);
+          points += 1;
+        }
+        blasts.splice(j, 1);
+        break;
+      }
+    }
+  }
+
 }
 
 function moveBg(bg, rate) {
@@ -159,7 +190,39 @@ function getRandomNum(min, max) {
   return Math.random() * (max - min + 1) + min;
 }
 
+function intersects(circle, rect) {
+  var rectCenterX = rect.drawX + (rect.width / 2);
+  var rectCenterY = rect.drawY + (rect.height / 2);
 
+  var distanceX = Math.abs(circle.x - rectCenterX);
+  var distanceY = Math.abs(circle.y - rectCenterY);
+
+  if (distanceX > (rect.width / 2 + circle.radius) ||
+      distanceY > (rect.height / 2 + circle.radius)) {
+    return false;
+  }
+
+  if (distanceX <= (rect.width / 2) ||
+      distanceY <= (rect.height / 2)) {
+    return true;
+  }
+
+  var cornerDistanceSq =
+    Math.pow((distanceX - rect.width / 2), 2) +
+    Math.pow((distanceY - rect.height / 2), 2)
+
+  return cornerDistanceSq <= Math.pow(circle.radius, 2);
+}
+
+function drawTextCentered(context, text, x, y, fontHeight, fontName) {
+  context.font = fontHeight + 'px ' + fontName;
+  var textWidth = context.measureText(text).width;
+
+  var actualX = x - (textWidth / 2);
+  var actualY = y - (fontHeight / 2);
+
+  context.fillText(text, actualX, actualY);
+}
 
 
 
@@ -181,8 +244,8 @@ function Player() {
   this.moveDown = false;
   this.moveLeft = false;
   this.moveRight = false;
-  this.fire = false;
   this.fired = 0;
+  this.hits = 3;
 }
 
 function clearCtxPlayer() {
@@ -245,25 +308,13 @@ function Candy(x, y, radius, allColors, distance) {
   this.x = x;
   this.y = y;
   this.radius = radius;
-  // this.hits = radius;
-  // this.destroyed = false;
+  this.hits = (2 * Math.floor(radius/15));
   this.colors = allColors[Math.floor(getRandomNum(0,6))];
   if (distance === 'near') {
     this.speed = (1/radius) * 100;
   } else {
     this.speed = radius;
   }
-  // this.containsPoint = function(x, y) {
-  //   if (x >= (this.x - this.radius) && x <= (this.x + this.radius)) {
-  //     if (y >= (this.y - this.radius) && y <= (this.y + this.radius)) {
-  //       return true;
-  //     } else {
-  //       return false;
-  //     }
-  //   } else {
-  //     return false;
-  //   }
-  // }
 }
 
 Candy.prototype.draw = function() {
@@ -302,7 +353,10 @@ function energyBlast(x, y) {
   this.frameX = 0;
   this.frameY = 720;
   this.frameCount = 0;
+}
 
+energyBlast.prototype.front = function() {
+  return this.drawX + this.width;
 }
 
 energyBlast.prototype.draw = function() {
@@ -340,7 +394,6 @@ function keyDown(event) {
 
   case SPACE_KEY:
   if (player.fired === 0) {
-    player.fire = true;
     player.fired = 1;
     break;
   }
@@ -375,10 +428,6 @@ function keyUp(event) {
   case RIGHT_KEY:
     player.moveRight = false;
     break;
-
-  // case SPACE_KEY:
-  //   player.fire = false;
-  //   break;
 
   default:
     handled = false;
