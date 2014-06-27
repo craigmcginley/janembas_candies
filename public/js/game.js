@@ -101,12 +101,16 @@ function loop() {
     moveBg(bgGround, 8);
     clearCtxCandy();
 
-    if (!boss) {
+    // if (!boss) {
       player.motion();
-    }
+      clearCtxPlayer();
+      player.draw();
+    // }
 
-    clearCtxPlayer();
-    player.draw();
+    // if (boss) {
+    //   clearCtxPlayer();
+    //   player.drawDeath();
+    // }
 
     loopChecks();
 
@@ -130,7 +134,9 @@ function stopLoop() {
 function loopChecks() {
 
   if (player.hits === 0) {
-    boss = true;
+    gameOver = true;
+    player.frameCount = 0;
+    // player.hits = -1;
   }
 
   for (var i = 0; i < farCandies.length; i++) {
@@ -264,6 +270,8 @@ function drawText(context, text, x, y, fontHeight, fontName) {
 
 
 
+
+
 // Player Functions
 function Player() {
   this.frameCount = 0;
@@ -320,6 +328,17 @@ Player.prototype.draw = function() {
     ctxPlayer.drawImage(spriteSheet, this.frameX, this.frameY, this.width, this.height, this.drawX, this.drawY, this.width, this.height);
   }
 };
+
+Player.prototype.drawDeath = function() {
+  this.width = 80;
+  this.height = 118;
+  this.frameY = 917;
+  this.frameX = (this.frameCount % 20) * this.width;
+  ctxPlayer.drawImage(spriteSheet, this.frameX, this.frameY, this.width, this.height, this.drawX, this.drawY, this.width, this.height);
+  if (this.frameCount !== 20){
+    this.frameCount += 1;
+  }
+}
 
 Player.prototype.motion = function() {
   if (this.moveUp && this.topY > 0) {
