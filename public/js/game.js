@@ -22,7 +22,40 @@ var requestAnimFrame = window.requestAnimationFrame ||
                         window.setTimeout(callback, 1000 / 60);
                        };
 
+var blastSounds = [], index = 0;
+for (var i = 0; i < 4; i++) {
+  blastSounds.push(new Audio('shoot1.mp3'));
+}
 
+function playBlastSound() {
+  if (window.chrome) blastSounds[index].load();
+  blastSounds[index].play();
+  index = (index + 1) % blastSounds.length;
+}
+
+var candyExplosionSounds = [], index = 0;
+for (var i = 0; i < 4; i++) {
+  candyExplosionSounds.push(new Audio('explosioncandy.mp3'));
+}
+
+function playCandyExplosionSound() {
+  if (window.chrome) candyExplosionSounds[index].load();
+  candyExplosionSounds[index].play();
+  index = (index + 1) % candyExplosionSounds.length;
+}
+
+var blastExplosionSounds = [], index = 0;
+for (var i = 0; i < 4; i++) {
+  blastExplosionSounds.push(new Audio('disc.mp3'));
+}
+
+function playBlastExplosionSound() {
+  if (window.chrome) blastExplosionSounds[index].load();
+  blastExplosionSounds[index].play();
+  index = (index + 1) % blastExplosionSounds.length;
+}
+
+var bgMusic = new Audio('music.mp3');
 
 var spriteSheet = new Image();
 spriteSheet.src = "sprite-sheet.png";
@@ -101,16 +134,9 @@ function loop() {
     moveBg(bgGround, 8);
     clearCtxCandy();
 
-    // if (!boss) {
-      player.motion();
-      clearCtxPlayer();
-      player.draw();
-    // }
-
-    // if (boss) {
-    //   clearCtxPlayer();
-    //   player.drawDeath();
-    // }
+    player.motion();
+    clearCtxPlayer();
+    player.draw();
 
     loopChecks();
 
@@ -125,6 +151,7 @@ function loop() {
 
 function startLoop() {
   loop();
+  bgMusic.play();
 }
 
 function stopLoop() {
@@ -136,7 +163,6 @@ function loopChecks() {
   if (player.hits === 0) {
     gameOver = true;
     player.frameCount = 0;
-    // player.hits = -1;
   }
 
   for (var i = 0; i < farCandies.length; i++) {
@@ -157,6 +183,7 @@ function loopChecks() {
 
   if (player.fired === 12) {
       blasts.push(new EnergyBlast(player.drawX+75, player.drawY+15));
+      playBlastSound();
     }
 
   for (var i = 0; i < blasts.length; i++) {
@@ -174,6 +201,7 @@ function loopChecks() {
     if (intersects(candies[i], player)) {
       player.hits -= 1;
       candyExplosions.push(new CandyExplosion(candies[i]));
+      playCandyExplosionSound();
       candies.splice(i, 1);
       candies.push(new Candy(getRandomNum(gameWidth+250, gameWidth + 500), getRandomNum(0, gameHeight), getRandomNum(15, 75), allColors, 'near'));
       break;
@@ -184,9 +212,11 @@ function loopChecks() {
         candies[i].hits -= 1;
         if (candies[i].hits !== 0){
           blastExplosions.push(new BlastExplosion(blasts[j], candies[i]));
+          playBlastExplosionSound();
         }
         if (candies[i].hits === 0) {
           candyExplosions.push(new CandyExplosion(candies[i]));
+          playCandyExplosionSound();
           points += (Math.floor(candies[i].radius/15));
           candies.splice(i, 1);
           candies.push(new Candy(getRandomNum(gameWidth+250, gameWidth + 500), getRandomNum(0, gameHeight), getRandomNum(15, 75), allColors, 'near'));
