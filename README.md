@@ -11,3 +11,5 @@ Objective:
   - The bigger the candy, the more points!
 
 This is my first javascript project, produced during my time at Launch Academy Summer 2014.
+
+[Play Online](http://janembas-candies.herokuapp.com)
