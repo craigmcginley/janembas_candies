@@ -241,6 +241,11 @@ function loopChecks() {
     }
   }
 
+  if (gameOver) {
+    drawText(ctxPlayer, 'Game Over', 500, 300, 100, 'Arial');
+    drawText(ctxPlayer, "Press 'R' to restart", 500, 350, 25, 'Arial');
+  }
+
 }
 
 function moveBg(bg, rate) {
@@ -525,6 +530,10 @@ function keyDown(event) {
     player.fired = 1;
     break;
   }
+
+  case R_KEY:
+    document.location.href = ""
+    break;
 
   default:
     handled = false;
