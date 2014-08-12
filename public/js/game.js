@@ -21,7 +21,7 @@ window.requestAnimFrame = function(){
         window.mozRequestAnimationFrame    ||
         window.oRequestAnimationFrame      ||
         window.msRequestAnimationFrame     ||
-        function(/* function */ callback){
+        function(callback){
             window.setTimeout(callback, 1000 / 60);
         }
     );
