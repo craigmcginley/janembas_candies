@@ -13,6 +13,7 @@ var boss = false;
 
 var gameWidth = canvasBg.width;
 var gameHeight = canvasBg.height;
+
 window.requestAnimFrame = function(){
     return (
         window.requestAnimationFrame       ||
@@ -529,15 +530,15 @@ function keyDown(event) {
     player.moveRight = true;
     break;
 
+  case R_KEY:
+    document.location.href = ""
+    break;
+
   case SPACE_KEY:
   if (player.fired === 0) {
     player.fired = 1;
     break;
   }
-
-  case R_KEY:
-    document.location.href = ""
-    break;
 
   default:
     handled = false;
