@@ -13,14 +13,18 @@ var boss = false;
 
 var gameWidth = canvasBg.width;
 var gameHeight = canvasBg.height;
-var requestAnimFrame = window.requestAnimationFrame ||
-                       window.webkitRequestAnimationFrame ||
-                       window.mozRequestAnimationFrame ||
-                       window.msRequestAnimationFrame ||
-                       window.oRequestAnimationFrame ||
-                       function(callback) {
-                        window.setTimeout(callback, 1000 / 60);
-                       };
+window.requestAnimFrame = function(){
+    return (
+        window.requestAnimationFrame       ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame    ||
+        window.oRequestAnimationFrame      ||
+        window.msRequestAnimationFrame     ||
+        function(/* function */ callback){
+            window.setTimeout(callback, 1000 / 60);
+        }
+    );
+}();
 
 var blastSounds = [], index = 0;
 for (var i = 0; i < 4; i++) {
