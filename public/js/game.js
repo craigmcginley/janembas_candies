@@ -68,7 +68,7 @@ spriteSheet.addEventListener('load', init, false);
 
 allColors = [["#ffffff", "#ff99ff", "#ff66ff", "#990099"],
              ["#ffffff", "#cc99ff", "#9966cc", "#330066"],
-             ["#ffffff", "#ffff66", "ffff00", "#cccc00"],
+             ["#ffffff", "#ffff66", "#ffff00", "#cccc00"],
              ["#ffffff", "#3399ff", "#0066cc", "#003366"],
              ["#ffffff", "#99ff99", "#66ff66", "#33cc33"],
              ["#ffffff", "#ff9999", "#ff6666", "#cc0033"],
