@@ -109,7 +109,7 @@ var loopTimer = 0;
 while (candies.length < 15) {
   candies.push(new Candy(getRandomNum(gameWidth, gameWidth + 400), getRandomNum(0, gameHeight), getRandomNum(15, 75), allColors, 'near'));
 }
-while (farCandies.length < 100) {
+while (farCandies.length < 50) {
   farCandies.push(new Candy(getRandomNum(0, gameWidth), getRandomNum(0, 470), getRandomNum(.7, 4), allColors, 'far'));
 }
 
